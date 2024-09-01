@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Color Picker Tool</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #555;
+            margin: 20px 0 10px;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: box-shadow 0.3s;
+            border: 2px solid #007bff;
+        }
+
+        input[type="color"]:hover {
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+        }
+
+        .color-display {
+            width: 120px;
+            height: 120px;
+            margin: 10px auto;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        #colorValue {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .palette {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .saved-color {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .saved-color:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border-color: #007bff;
+        }
+
+        .delete-button {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+        }
+
+        .saved-color:hover .delete-button {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .color-display {
+                width: 100px;
+                height: 100px;
+            }
+
+            .saved-color {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Color Picker Tool</h1>
+        <h2>Solid Color</h2>
+        <input type="color" id="colorPicker" value="#ff0000">
+        <h2>Gradient Color</h2>
+        <input type="color" id="colorPicker1" value="#ff0000">
+        <input type="color" id="colorPicker2" value="#0000ff">
+        <div id="colorDisplay" class="color-display"></div>
+        <p id="colorValue">HEX: #ff0000</p>
+        <button id="saveColor">Save Solid Color</button>
+        <button id="saveGradient">Save Gradient</button>
+        <h2>Saved Colors:</h2>
+        <div id="palette" class="palette"></div>
+    </div>
+    <script>
+        const colorPicker = document.getElementById('colorPicker');
+        const colorPicker1 = document.getElementById('colorPicker1');
+        const colorPicker2 = document.getElementById('colorPicker2');
+        const colorDisplay = document.getElementById('colorDisplay');
+        const colorValue = document.getElementById('colorValue');
+        const saveColorButton = document.getElementById('saveColor');
+        const saveGradientButton = document.getElementById('saveGradient');
+        const palette = document.getElementById('palette');
+
+        function loadSavedColors() {
+            const savedColors = JSON.parse(localStorage.getItem('savedColors')) || [];
+            savedColors.forEach(item => {
+                addColorToPalette(item.color, item.type);
+            });
+        }
+
+        function updateColor(event) {
+            const selectedColor = event.target.value;
+            colorDisplay.style.backgroundColor = selectedColor;
+            colorDisplay.style.borderColor = selectedColor;
+            colorValue.textContent = `HEX: ${selectedColor}`;
+        }
+
+        function updateGradient() {
+            const color1 = colorPicker1.value;
+            const color2 = colorPicker2.value;
+            colorDisplay.style.background = `linear-gradient(${color1}, ${color2})`;
+            colorValue.textContent = `Gradient: ${color1} to ${color2}`;
+        }
+
+        function saveColor() {
+            const selectedColor = colorPicker.value;
+            addColorToPalette(selectedColor, 'solid');
+            saveColorsToLocalStorage(selectedColor, 'solid');
+        }
+
+        function saveGradient() {
+            const color1 = colorPicker1.value;
+            const color2 = colorPicker2.value;
+            const gradient = `linear-gradient(${color1}, ${color2})`;
+            addColorToPalette(gradient, 'gradient');
+            saveColorsToLocalStorage(gradient, 'gradient');
+        }
+
+        function addColorToPalette(color, type) {
+            const savedColorDiv = document.createElement('div');
+            savedColorDiv.className = 'saved-color';
+            savedColorDiv.style.background = type === 'gradient' ? color : color;
+
+            // Create a delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = 'X';
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                removeColor(color, savedColorDiv);
+            });
+
+            savedColorDiv.addEventListener('click', () => {
+                if (type === 'gradient') {
+                    const colors = color.split('linear-gradient(')[1].split(')')[0].split(',');
+                    colorPicker1.value = colors[0].trim();
+                    colorPicker2.value = colors[1].trim();
+                    updateGradient();
+                } else {
+                    colorPicker.value = color;
+                    updateColor({ target: colorPicker });
+                }
+            });
+
+            savedColorDiv.appendChild(deleteButton);
+            palette.appendChild(savedColorDiv);
+        }
+
+        function removeColor(color, colorDiv) {
+            colorDiv.remove();
+            let savedColors = JSON.parse(localStorage.getItem('savedColors')) || [];
+            savedColors = savedColors.filter(c => c.color !== color); 
+            localStorage.setItem('savedColors', JSON.stringify(savedColors)); 
+        }
+
+        function saveColorsToLocalStorage(color, type) {
+            const savedColors = JSON.parse(localStorage.getItem('savedColors')) || [];
+            if (!savedColors.some(item => item.color === color && item.type === type)) {
+                savedColors.push({ color, type });
+                localStorage.setItem('savedColors', JSON.stringify(savedColors));
+            }
+        }
+
+        colorPicker.addEventListener('input', updateColor);
+        colorPicker1.addEventListener('input', updateGradient);
+        colorPicker2.addEventListener('input', updateGradient);
+        saveColorButton.addEventListener('click', saveColor);
+        saveGradientButton.addEventListener('click', saveGradient);
+
+        updateColor({ target: colorPicker });
+        updateGradient();
+        loadSavedColors();
+    </script>
+</body>
+</html>

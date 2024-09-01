@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body {
+            background-color: #e3f2fd; /* Soft blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif; /* Modern font */
+            color: #333;
+            margin: 0;
+        }
+
+        .calculator {
+            background-color: #ffffff; /* White background */
+            border-radius: 20px; /* More rounded corners */
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.2); /* Stronger shadow for depth */
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            transition: transform 0.3s; /* Subtle scale effect on hover */
+        }
+
+        .calculator:hover {
+            transform: scale(1.02); /* Scale effect on hover */
+        }
+
+        .input {
+            border: 2px solid #4caf50; /* Green border */
+            border-radius: 15px; /* Rounded corners */
+            height: 80px; /* Increased height */
+            padding: 15px; /* More padding for input */
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            background-color: #f1f8e9; /* Light green background */
+            transition: border-color 0.3s, background-color 0.3s; /* Smooth transition */
+        }
+
+        .input:focus {
+            border-color: #66bb6a; /* Darker green on focus */
+            background-color: #fff; /* Change to white on focus */
+            outline: none; /* Remove outline */
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Four columns */
+            gap: 10px; /* Space between buttons */
+        }
+
+        .button {
+            border: none; /* No border */
+            border-radius: 15px; /* Rounded corners */
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            background-color: #81d4fa; /* Light blue button color */
+            color: #333; /* Dark text */
+            font-size: 1.8rem;
+            transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            height: 70px; /* Uniform button height */
+        }
+
+        .button:hover {
+            background-color: #4fc3f7; /* Darker blue on hover */
+            transform: translateY(-3px); /* Lift effect */
+        }
+
+        .button:active {
+            background-color: #039be5; /* Dark blue when active */
+            transform: translateY(1px); /* Pressed effect */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Pressed shadow effect */
+        }
+
+        .equal {
+            grid-column: span 2; /* Equal button spans two columns */
+            background-color: #66bb6a; /* Green background */
+            color: white; /* White text */
+            font-size: 2rem; /* Larger font size */
+            height: 70px; /* Uniform height */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+        }
+
+        .equal:hover {
+            background-color: #388e3c; /* Darker green on hover */
+        }
+
+        #clear {
+            background-color: #ff5252; /* Red for clear button */
+            color: white;
+            font-size: 1.8rem;
+            height: 70px; /* Uniform height */
+            grid-column: span 2; /* Clear button spans two columns */
+        }
+
+        #clear:hover {
+            background-color: #ff1744; /* Darker red on hover */
+        }
+
+        @media (max-width: 400px) {
+            .calculator {
+                width: 90%; /* Responsive width */
+            }
+
+            .button {
+                padding: 15px; /* Adjust button padding for smaller screens */
+                font-size: 1.5rem; /* Adjust font size */
+                height: 60px; /* Adjust height */
+            }
+
+            .input {
+                height: 70px; /* Adjust input height */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="calculator">
+        <div class="input" id="input" contenteditable="true"></div>
+        <div class="buttons">
+            <div class="button" id="clear">C</div>
+            <div class="button equal" id="result">=</div>
+            <!-- <div class="button">.</div> -->
+            <div class="button">+</div>
+            <div class="button">1</div>
+            <div class="button">2</div>
+            <div class="button">3</div>
+            <div class="button">-</div>
+            <div class="button">4</div>
+            <div class="button">5</div>
+            <div class="button">6</div>
+            <div class="button">×</div>
+            <div class="button">7</div>
+            <div class="button">8</div>
+            <div class="button">9</div>
+            <div class="button">÷</div>
+            <div class="button">0</div>
+            <div class="button">.</div>
+        </div>
+    </div>
+
+    <script>
+        "use strict";
+
+        var input = document.getElementById('input'), // input/output button
+            number = document.querySelectorAll('.button:not(#clear):not(#result)'), // number buttons
+            operator = document.querySelectorAll('.button:nth-child(n+4)'),
+            result = document.getElementById('result'), // equal button
+            clear = document.getElementById('clear'), // clear button
+            resultDisplayed = false; // flag to keep an eye on what output is displayed
+
+        // adding click handlers to number buttons
+        for (var i = 0; i < number.length; i++) {
+            number[i].addEventListener("click", function (e) {
+                var currentString = input.innerHTML;
+                var lastChar = currentString[currentString.length - 1];
+
+                if (resultDisplayed === false) {
+                    input.innerHTML += e.target.innerHTML;
+                } else if (resultDisplayed === true && /[+\-×÷]/.test(lastChar)) {
+                    resultDisplayed = false;
+                    input.innerHTML += e.target.innerHTML;
+                } else {
+                    resultDisplayed = false;
+                    input.innerHTML = "";
+                    input.innerHTML += e.target.innerHTML;
+                }
+            });
+        }
+
+        // adding click handlers to operator buttons
+        for (var i = 0; i < operator.length; i++) {
+            operator[i].addEventListener("click", function (e) {
+                var currentString = input.innerHTML;
+                var lastChar = currentString[currentString.length - 1];
+
+                if (/[+\-×÷]/.test(lastChar)) {
+                    var newString = currentString.substring(0, currentString.length - 1) + e.target.innerHTML;
+                    input.innerHTML = newString;
+                } else if (currentString.length == 0) {
+                    console.log("enter a number first");
+                } else {
+                    input.innerHTML += e.target.innerHTML;
+                }
+            });
+        }
+
+        // on click of 'equal' button
+        result.addEventListener("click", function () {
+            var inputString = input.innerHTML;
+
+            var numbers = inputString.split(/\+|\-|\×|\÷/g);
+            var operators = inputString.replace(/[0-9]|\./g, "").split("");
+
+            var divide = operators.indexOf("÷");
+            while (divide != -1) {
+                numbers.splice(divide, 2, numbers[divide] / numbers[divide + 1]);
+                operators.splice(divide, 1);
+                divide = operators.indexOf("÷");
+            }
+
+            var multiply = operators.indexOf("×");
+            while (multiply != -1) {
+                numbers.splice(multiply, 2, numbers[multiply] * numbers[multiply + 1]);
+                operators.splice(multiply, 1);
+                multiply = operators.indexOf("×");
+            }
+
+            var subtract = operators.indexOf("-");
+            while (subtract != -1) {
+                numbers.splice(subtract, 2, numbers[subtract] - numbers[subtract + 1]);
+                operators.splice(subtract, 1);
+                subtract = operators.indexOf("-");
+            }
+
+            var add = operators.indexOf("+");
+            while (add != -1) {
+                numbers.splice(add, 2, parseFloat(numbers[add]) + parseFloat(numbers[add + 1]));
+                operators.splice(add, 1);
+                add = operators.indexOf("+");
+            }
+
+            input.innerHTML = numbers[0]; // displaying the output
+            resultDisplayed = true; // turning flag if result is displayed
+        });
+
+        // clearing the input on press of clear
+        clear.addEventListener("click", function () {
+            input.innerHTML = "";
+        });
+    </script>
+</body>
+
+</html>

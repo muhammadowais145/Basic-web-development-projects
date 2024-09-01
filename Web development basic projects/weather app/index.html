@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="weather app.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            transition: background 0.5s;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            /* background: rgba(255, 255, 255, 0.9); */
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            font-size: 1em;
+            width: 70%;
+            max-width: 300px;
+            border: 2px solid #007bff;
+            border-radius: 25px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"]:focus {
+            border-color: #0056b3;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-left: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .weather-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            transition: transform 0.3s;
+        }
+
+        .weather-card:hover {
+            transform: scale(1.02);
+        }
+
+        h2 {
+            font-size: 2em;
+            margin: 10px 0;
+            color: #007bff;
+        }
+
+        #icon {
+            width: 100px;
+            height: 100px;
+            margin: 10px 0;
+            transition: transform 0.5s, opacity 0.5s;
+        }
+
+        #icon.animate {
+            transform: scale(1.2);
+            opacity: 0.8;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+
+        .loading {
+            font-size: 1.2em;
+            color: #007bff;
+            font-weight: bold;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            input[type="text"] {
+                width: 90%;
+            }
+            button {
+                width: 90%;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather App</h1>
+        <input type="text" id="cityInput" placeholder="Enter city name">
+        <button onclick="fetchWeatherData()">Get Weather</button>
+        
+        <div id="weatherCard" class="weather-card" style="display:none;">
+            <h2 id="location">--</h2>
+            <img id="icon" src="" alt="Weather icon">
+            <p id="temperature">--</p>
+            <p id="condition">--</p>
+            <p>Humidity: <span id="humidity">--</span>%</p>
+            <p>Wind Speed: <span id="windSpeed">--</span> m/s</p>
+            <div id="loading" class="loading" style="display:none;">
+                <div class="spinner"></div> Loading...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = '0697659dfd4573b05a01d246986de0e3';  // Your Api Key Here
+
+        function fetchWeatherData() {
+            const city = document.getElementById('cityInput').value;
+            const loadingIndicator = document.getElementById('loading');
+            loadingIndicator.style.display = 'flex';
+
+            if (!city) {
+                alert('Please enter a city name.');
+                loadingIndicator.style.display = 'none'; 
+                return;
+            }
+
+            const geocodingUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+            fetch(geocodingUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('City not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('location').textContent = data.name;
+                    document.getElementById('temperature').textContent = data.main.temp + ' °C';
+                    document.getElementById('condition').textContent = data.weather[0].description;
+                    document.getElementById('humidity').textContent = data.main.humidity;
+                    document.getElementById('windSpeed').textContent = data.wind.speed;
+
+                    const iconCode = data.weather[0].icon;
+                    const iconElement = document.getElementById('icon');
+                    iconElement.src = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
+                    iconElement.classList.add('animate');
+                    
+                    setTimeout(() => {
+                        iconElement.classList.remove('animate');
+                    }, 500);
+                    
+                    changeBackgroundColor(data.weather[0].main);
+                    document.getElementById('weatherCard').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching weather data:', error); 
+                    alert('Error fetching weather data: ' + error.message);
+                    clearWeatherData();
+                })
+                .finally(() => {
+                    loadingIndicator.style.display = 'none';
+                });
+        }
+
+        function changeBackgroundColor(weatherCondition) {
+            const body = document.body;
+            switch (weatherCondition.toLowerCase()) {
+                case 'clear':
+                    body.style.background = 'linear-gradient(to bottom, #87CEEB, #FFFFFF)';
+                    break;
+                case 'clouds':
+                    body.style.background = 'linear-gradient(to bottom, #B0C4DE, #FFFFFF)';
+                    break;
+                case 'rain':
+                    body.style.background = 'linear-gradient(to bottom, #4682B4, #B0E0E6)';
+                    break;
+                case 'snow':
+                    body.style.background = 'linear-gradient(to bottom, #F0F8FF, #FFFFFF)';
+                    break;
+                case 'drizzle':
+                    body.style.background = 'linear-gradient(to bottom, #AFEEEE, #FFFFFF)';
+                    break;
+                case 'thunderstorm':
+                    body.style.background = 'linear-gradient(to bottom, #A9A9A9, #FFFFFF)';
+                    break;
+                default:
+                    body.style.background = 'linear-gradient(to bottom, #FFFFFF, #FFFFFF)';
+                    break;
+            }
+        }
+
+        function clearWeatherData() {
+            document.getElementById('location').textContent = '--';
+            document.getElementById('temperature').textContent = '--';
+            document.getElementById('condition').textContent = '--';
+            document.getElementById('humidity').textContent = '--';
+            document.getElementById('windSpeed').textContent = '--';
+            document.getElementById('icon').src = '';
+            document.getElementById('weatherCard').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

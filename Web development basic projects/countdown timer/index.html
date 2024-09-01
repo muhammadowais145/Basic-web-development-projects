@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Countdown Timer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            color: white;
+            animation: backgroundAnimation 10s ease infinite alternate;
+        }
+
+        @keyframes backgroundAnimation {
+            0% { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+            100% { background: linear-gradient(135deg, #0072ff, #00c6ff); }
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        .countdown-display {
+            font-size: 48px;
+            margin: 20px 0;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .date-input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            width: 250px;
+        }
+
+        .buttons {
+            margin: 15px 0;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            font-size: 16px;
+        }
+
+        .start-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .start-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .reset-btn {
+            background: #dc3545;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Countdown Timer</h1>
+        <div id="countdown" class="countdown-display">00d 00h 00m 00s</div>
+        <input type="datetime-local" id="eventDate" class="date-input" placeholder="Select Event Date">
+        <div class="buttons">
+            <button onclick="startTimer()" class="btn start-btn">Start Countdown</button>
+            <button onclick="resetTimer()" class="btn reset-btn">Reset</button>
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+    <script>
+        let countdownInterval;
+
+        function startTimer() {
+            const eventDate = new Date(document.getElementById("eventDate").value).getTime();
+            const countdownElement = document.getElementById("countdown");
+            const messageElement = document.getElementById("message");
+
+            if (isNaN(eventDate)) {
+                countdownElement.innerHTML = "Please enter a valid date.";
+                return;
+            }
+
+            localStorage.setItem("eventDate", eventDate); 
+            messageElement.innerHTML = ""; 
+            clearInterval(countdownInterval); 
+
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = eventDate - now;
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.innerHTML = "Event has started!";
+                    messageElement.innerHTML = "🎉 Enjoy the event!";
+                    localStorage.removeItem("eventDate"); 
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(countdownInterval);
+            document.getElementById("countdown").innerHTML = "00d 00h 00m 00s";
+            document.getElementById("eventDate").value = "";
+            document.getElementById("message").innerHTML = "";
+            localStorage.removeItem("eventDate"); 
+        }
+
+        window.onload = function() {
+            const savedEventDate = localStorage.getItem("eventDate");
+            if (savedEventDate) {
+                document.getElementById("eventDate").value = new Date(parseInt(savedEventDate)).toISOString().slice(0, 16);
+                startTimer(); 
+            }
+        };
+    </script>
+</body>
+</html>
